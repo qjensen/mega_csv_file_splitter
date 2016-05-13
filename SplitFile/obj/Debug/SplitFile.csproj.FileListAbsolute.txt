@@ -1,0 +1,8 @@
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\bin\Debug\SplitFile.exe
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\bin\Debug\SplitFile.pdb
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\ResolveAssemblyReference.cache
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.Form1.resources
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.Properties.Resources.resources
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.csproj.GenerateResource.Cache
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.exe
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.pdb

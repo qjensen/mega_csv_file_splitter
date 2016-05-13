@@ -1,0 +1,8 @@
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\bin\Release\CSV File Chunker.exe
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\bin\Release\CSV File Chunker.pdb
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\ResolveAssemblyReference.cache
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\SplitFile.Form1.resources
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\SplitFile.Properties.Resources.resources
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\CSV Chunker.csproj.GenerateResource.Cache
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\CSV File Chunker.exe
+D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Release\CSV File Chunker.pdb

@@ -1,100 +1,66 @@
-﻿using System;
+﻿/*
+ * Created by SharpDevelop.
+ * User: jenseqxklp
+ * Date: 11/8/2016
+ * Time: 1:15 PM
+ * 
+ * To change this template use Tools | Options | Coding | Edit Standard Headers.
+ */
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
+
 
 namespace SplitFile
 {
-    public partial class Form1 : Form
-    {
-        BackgroundWorker bw;
-        long lineCountGlobal;
-
-        public Form1()
-        {
-            InitializeComponent();
-            bw = new BackgroundWorker();
-        }
-
-        private void btnSelFile_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog fb = new OpenFileDialog();
-
-            DialogResult dr = fb.ShowDialog();
-
-            if (dr == DialogResult.OK)
-            {
-                this.txtSrcFile.Text = fb.FileName;
-            }
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            long chunkSize = Convert.ToInt64(this.txtChunkSize.Text);
-            string srcFileFull = this.txtSrcFile.Text;
-            string srcFileName = Path.GetFileNameWithoutExtension(srcFileFull);
-            bool includeHeader = this.checkBox1.Checked;
-            string destDir = Directory.GetParent(srcFileFull) + "\\split\\";
-            this.txtMessages.Text = "Counting lines in CSV File" + Environment.NewLine;
-            CsvSplitter csvSplitter = new CsvSplitter(srcFileFull, destDir, chunkSize, includeHeader);
-            csvSplitter.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
-            csvSplitter.Split();
-            bw.WorkerSupportsCancellation = true;
-            bw.WorkerReportsProgress = true;
-            bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
-            bw.RunWorkerAsync();
-        }
-
-        void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            if (e.UserState != null)
-            {
-                SplitFileMessage msg = (SplitFileMessage)e.UserState;
-
-                if (msg.MessageType == SplitFileMessage.MSG_TYPE_ERR)
-                {
-                    throw new Exception(msg.Message);
-                }
-                else
-                {
-                    this.txtMessages.Text += msg.Message + Environment.NewLine;
-                }
-            }
-
-            progressBar1.Value = e.ProgressPercentage;
-            progressBar1.Update();
-        }
-
-        void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            this.txtMessages.Text += "Completed File Splitting Process" + Environment.NewLine + " Wrote " + lineCountGlobal.ToString() + "Lines";
-            MessageBox.Show("Completed File Splitting Process!");
-        }
-
-        public void SplitFile(object sender, DoWorkEventArgs e)
+	/// <summary>
+	/// Description of CsvSplitter.
+	/// </summary>
+	public class CsvSplitter
+	{
+		private bool _includeHeader;
+		private long _chunkSize;
+		private long _lineCount;
+		private string _srcFile;
+		private string _destDir;
+		private string _srcFileName;
+		private string _srcFileExt;
+		private long _chunkCount;
+		private long _totalLines;
+		
+		public event ProgressChangedEventHandler ProgressChanged;
+		
+		public CsvSplitter(string srcFile, string destDir, long chunkSize, bool includeHeader)
+		{
+			this._srcFile = srcFile;
+			this._srcFileName = Path.GetFileNameWithoutExtension(srcFile);
+			this._srcFileExt = Path.GetExtension(srcFile);
+			this._destDir = destDir;
+			this._chunkSize = chunkSize;
+			this._includeHeader = includeHeader;
+			this._totalLines = CountSourceLines(srcFile);
+		}
+		
+		public Split() {
+			BackgroundWorker bw = new BackgroundWorker();
+			bw.DoWork += SplitFile;
+		}
+		
+		public void SplitFile(object sender, DoWorkEventArgs e)
         {
             long lineNumberIn = 0;
             long lineNumberOut = 0;
             lineCountGlobal = 0;
-            long chunkSize = Convert.ToInt64(this.txtChunkSize.Text);
             long chunkCount = 1;//counts the number of chunks or files written
-            string srcFileFull = this.txtSrcFile.Text;
-            long totalLines = CountSourceLines(srcFileFull);
-            string srcFileName = Path.GetFileNameWithoutExtension(srcFileFull);
-            bool includeHeader = this.checkBox1.Checked;
             string headerLine = "";
-            string destDir = Directory.GetParent(srcFileFull) + "\\split\\";
-            string ext = Path.GetExtension(srcFileFull);
-
+			bw.
             bw.ReportProgress(0,new SplitFileMessage(SplitFileMessage.MSG_TYPE_INFO,"Found " + totalLines.ToString() + Environment.NewLine));
             if (!Directory.Exists(destDir))
             {
+            	//TODO: add try/catch here
                 Directory.CreateDirectory(destDir);
             }
             string outFile = destDir + srcFileName + "_chunk" + chunkCount.ToString() + ext;
@@ -170,7 +136,6 @@ namespace SplitFile
                             e.Cancel = true;
                             destWriter.Flush();
                             destWriter.Close();
-                            Application.Exit();
                         }
                     }
                     destWriter.Flush();
@@ -184,36 +149,43 @@ namespace SplitFile
             }
             bw.ReportProgress(100);
         }
-
-        /// <summary>
-        /// filters key presses so only numbers are able to be entered
+		
+		private void HandleProgressChanged(object sender, ProgressChangedEventArgs e)
+	    {
+	        if (ProgressChanged != null)
+	            ProgressChanged.Invoke(this, e);
+	    }
+		
+		/// <summary>
+        /// Counts the number of lines in file before process. This has been tested in files
+        /// with millions of lines and runs in acceptable time
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void txtChunkSize_KeyPress(object sender, KeyPressEventArgs e)
+        /// <param name="path">Full path to the source CSV file</param>
+        /// <returns></returns>
+        public long CountSourceLines()
         {
-            const char Delete = (char)8;
-            e.Handled = !Char.IsDigit(e.KeyChar) && e.KeyChar != Delete;
-        }
-
-        
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (bw.IsBusy)
+            long count = 0;
+            try
             {
-                bw.CancelAsync();
+                using (StreamReader r = new StreamReader(this.srcFile))
+                {
+                    string line;
+                    while ((line = r.ReadLine()) != null)
+                    {
+                        count++;
+                    }
+                }
             }
-
-            //give the backgroundworker a few ms to finish
-            while (bw.IsBusy)
+            catch (Exception ex)
             {
-                System.Threading.Thread.Sleep(100);
+                SplitFileMessage msg = new SplitFileMessage(SplitFileMessage.MSG_TYPE_ERR, ex.Message);
+                bw.ReportProgress(0, msg);
             }
+            return count;
         }
-    }
-
-    public class SplitFileMessage
+	}
+	
+	public class SplitFileMessage
     {
         public const int MSG_TYPE_INFO = 1;
         public const int MSG_TYPE_ERR = 2;

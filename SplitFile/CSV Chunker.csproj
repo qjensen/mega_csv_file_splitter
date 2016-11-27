@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CsvSplitter.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,12 +85,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="1296484831_application_split.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="CSV Chunker.csproj">
-      <Project>{C85E1E61-CED9-4103-BA6F-EDBCCD82EE0F}</Project>
-      <Name>CSV Chunker</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

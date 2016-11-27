@@ -30,6 +30,7 @@ namespace SplitFile
 		private string _srcFileExt;
 		private long _chunkCount;
 		private long _totalLines;
+		private BackgroundWorker _bw;
 		
 		public event ProgressChangedEventHandler ProgressChanged;
 		
@@ -41,29 +42,35 @@ namespace SplitFile
 			this._destDir = destDir;
 			this._chunkSize = chunkSize;
 			this._includeHeader = includeHeader;
-			this._totalLines = CountSourceLines(srcFile);
+			this._totalLines = CountSourceLines();
 		}
 		
-		public Split() {
-			BackgroundWorker bw = new BackgroundWorker();
-			bw.DoWork += SplitFile;
+		public long getLineCount(){
+		    return this._lineCount;
+		}
+		
+		public void Split() {
+			this._bw = new BackgroundWorker();
+			this._bw.WorkerReportsProgress = true;
+			this._bw.DoWork += SplitFile;
+			this._bw.ReportProgress(0,new SplitFileMessage(SplitFileMessage.MSG_TYPE_INFO,"Found " + this._totalLines.ToString()));
+			this._bw.RunWorkerAsync();
 		}
 		
 		public void SplitFile(object sender, DoWorkEventArgs e)
         {
             long lineNumberIn = 0;
             long lineNumberOut = 0;
-            lineCountGlobal = 0;
+            long lineCountGlobal = 0;
             long chunkCount = 1;//counts the number of chunks or files written
             string headerLine = "";
-			bw.
-            bw.ReportProgress(0,new SplitFileMessage(SplitFileMessage.MSG_TYPE_INFO,"Found " + totalLines.ToString() + Environment.NewLine));
-            if (!Directory.Exists(destDir))
+            
+            if (!Directory.Exists(this._destDir))
             {
             	//TODO: add try/catch here
-                Directory.CreateDirectory(destDir);
+                Directory.CreateDirectory(this._destDir);
             }
-            string outFile = destDir + srcFileName + "_chunk" + chunkCount.ToString() + ext;
+            string outFile = this._destDir + this._srcFileName + "_chunk" + chunkCount.ToString() + this._srcFileExt;
             TextWriter destWriter = null;
 
             try
@@ -73,39 +80,39 @@ namespace SplitFile
             catch (Exception ex)
             {
                 SplitFileMessage msg = new SplitFileMessage(SplitFileMessage.MSG_TYPE_ERR, ex.Message);
-                bw.ReportProgress(0, msg);
+                this._bw.ReportProgress(0, msg);
             }
 
             try
             {
-                using (StreamReader reader = new StreamReader(srcFileFull))
+                using (StreamReader reader = new StreamReader(this._srcFile))
                 {
                     string csvLine;
                     while((csvLine = reader.ReadLine()) != null)
                     {
                         lineNumberIn++;
-                        if (lineNumberIn == 1 && includeHeader)
+                        if (lineNumberIn == 1 && this._includeHeader)
                         {
                             headerLine = csvLine;
 
                             //writes header line out first time through
                             destWriter.WriteLine(headerLine);
                             lineNumberOut++;
-                            lineCountGlobal++;
+                            this._lineCount++;
                         }
 
-                        if (lineNumberOut <= chunkSize)
+                        if (lineNumberOut <= this._chunkSize)
                         {
                             destWriter.WriteLine(csvLine);
                             lineNumberOut++;
-                            lineCountGlobal++;
+                            this._lineCount++;
                         }
                         else
                         {
                             destWriter.Flush();
                             destWriter.Close();
-                            chunkCount++;
-                            outFile = destDir + srcFileName + "_chunk" + chunkCount.ToString() + ext;
+                            this._chunkCount++;
+                            outFile = this._destDir + this._srcFileName + "_chunk" + chunkCount.ToString() + this._srcFileExt;
                             try
                             {
                                 destWriter = new StreamWriter(outFile);
@@ -114,9 +121,9 @@ namespace SplitFile
                             catch (Exception ex)
                             {
                                 SplitFileMessage msg = new SplitFileMessage(SplitFileMessage.MSG_TYPE_ERR, ex.Message);
-                                bw.ReportProgress(0, msg);
+                                this._bw.ReportProgress(0, msg);
                             }
-                            if (includeHeader)
+                            if (this._includeHeader)
                             {
                                 destWriter.WriteLine(headerLine);
                                 lineNumberOut++;
@@ -126,12 +133,12 @@ namespace SplitFile
                             lineNumberOut++;
                             lineCountGlobal++;
                             //update progress bar after each chunk is processed
-                            double pct = ((double)lineNumberIn / (double)totalLines) * 100;
+                            double pct = ((double)lineNumberIn / (double)this._totalLines) * 100;
                             int displayPct = (int)Math.Round(pct, 0);
-                            bw.ReportProgress(displayPct);
+                            this._bw.ReportProgress(displayPct);
                             //System.Threading.Thread.Sleep(0);
                         }
-                        if (bw.CancellationPending)
+                        if (this._bw.CancellationPending)
                         {
                             e.Cancel = true;
                             destWriter.Flush();
@@ -145,9 +152,9 @@ namespace SplitFile
             catch (Exception ex)
             {
                 SplitFileMessage msg = new SplitFileMessage(SplitFileMessage.MSG_TYPE_ERR, ex.Message);
-                bw.ReportProgress(0, msg);
+                this._bw.ReportProgress(0, msg);
             }
-            bw.ReportProgress(100);
+            this._bw.ReportProgress(100);
         }
 		
 		private void HandleProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -167,7 +174,7 @@ namespace SplitFile
             long count = 0;
             try
             {
-                using (StreamReader r = new StreamReader(this.srcFile))
+                using (StreamReader r = new StreamReader(this._srcFile))
                 {
                     string line;
                     while ((line = r.ReadLine()) != null)
@@ -179,9 +186,22 @@ namespace SplitFile
             catch (Exception ex)
             {
                 SplitFileMessage msg = new SplitFileMessage(SplitFileMessage.MSG_TYPE_ERR, ex.Message);
-                bw.ReportProgress(0, msg);
+                this._bw.ReportProgress(0, msg);
             }
             return count;
+        }
+        
+        public void cancel() {
+            if (this._bw.IsBusy)
+            {
+                this._bw.CancelAsync();
+            }
+
+            //give the backgroundworker a few ms to finish
+            while (this._bw.IsBusy)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
         }
 	}
 	

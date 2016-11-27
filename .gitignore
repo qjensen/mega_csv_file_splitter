@@ -1,0 +1,4 @@
+SplitFile/obj
+SplitFile/obj/*
+SplitFile/bin
+SplitFile/bin/*

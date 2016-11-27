@@ -6,3 +6,12 @@ D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\SplitFile.Propertie
 D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\CSV Chunker.csproj.GenerateResource.Cache
 D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\CSV File Chunker.exe
 D:\clients\scaledsol\SplitFile\SplitFile\SplitFile\obj\Debug\CSV File Chunker.pdb
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\CSV Chunker.csprojResolveAssemblyReference.cache
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\SplitFile.Form1.resources
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\SplitFile.Properties.Resources.resources
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\CSV Chunker.csproj.GenerateResource.Cache
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\bin\Debug\CSV File Chunker.exe.config
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\bin\Debug\CSV File Chunker.exe
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\bin\Debug\CSV File Chunker.pdb
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\CSV File Chunker.exe
+S:\clients\scaledsol\mega_csv_file_splitter\SplitFile\obj\Debug\CSV File Chunker.pdb
